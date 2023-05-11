@@ -47,6 +47,7 @@ uint8_t RxBuffer[20];
 uint8_t TxBuffer[500];
 int freq_value = 0;
 int LEDStatus = 1;
+int lala = 0;
 enum  {
 		 MainMenu,
 		 LEDControl,
@@ -101,10 +102,14 @@ int main(void)
 //  uint8_t text[] = "HELLO FIBO";
 //  HAL_UART_Transmit(&huart2, text , 11, 10);
   UARTInterruptConfig();
-  sprintf((char*)TxBuffer,"Welcome to LED and Button Control System \r\n"
+  sprintf((char*)TxBuffer,"=======================================================\r\n"
+		  "Welcome to LED and Button Control System\r\n"
+		  "\r\n"
   							"Please Select these functions for selecting modes \r\n"
+		  "\r\n"
   							"Press 0: LED Control mode \r\n"
   							"Press 1: Button status mode \r\n"
+		  	  	  	  	  	"======================================================\r\n"
   							"\r\n");
   		HAL_UART_Transmit(&huart2, TxBuffer, strlen((char*)TxBuffer),300);
 
@@ -240,6 +245,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -249,12 +258,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) /*ถู�?เรีย�?เ�
 
 		if(state == ButtonStatus && (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) == 0)
 		{
-		sprintf((char*)TxBuffer,"Pressed \r\n");
+		sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+				"\r\n"
+				"Status: Button is pressed \r\n"
+				"\r\n"
+				"----------------------------------------\r\n"
+				"\r\n");
 		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		}
 		if(state == ButtonStatus && (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) == 1)
 		{
-		sprintf((char*)TxBuffer,"unPressed \r\n");
+		sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+				"\r\n"
+				"Status: Button is not pressed \r\n"
+				"\r\n"
+				"----------------------------------------\r\n"
+				"\r\n");
+
 		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		}
 	}
@@ -280,28 +300,46 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		   case MainMenu:
 				if(RxBuffer[0] == '0')
 				{
-					sprintf((char*)TxBuffer,"Welcome to LED Control mode \r\n"
+					sprintf((char*)TxBuffer, "----------------------------------------\r\n"
+							"\r\n"
+							"Welcome to LED Control mode \r\n"
+							"\r\n"
 							"Please Select the function(s) \r\n"
+							"\r\n"
 							"Press a: Speed Up +1Hz \r\n"
 							"Press s: Speed Down -1Hz \r\n"
 							"Press d: On/Off \r\n"
 							"Press x: back to the main menu \r\n"
+							"\r\n"
+							"----------------------------------------\r\n"
 							" \r\n");
 					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 					state = LEDControl;
 				}
 				if(RxBuffer[0] == '1')
 				{
-					sprintf((char*)TxBuffer,"Welcome to Button status mode \r\n"
+					sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+							"\r\n"
+							"Welcome to Button status mode \r\n"
+							"\r\n"
 							"Please Select the function(s) \r\n"
+							"\r\n"
 							"Press x: back to the main menu \r\n"
+							"\r\n"
+							"----------------------------------------\r\n"
 							" \r\n");
 					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 					state = ButtonStatus;
 				}
 				if(RxBuffer[0] != '0' && RxBuffer[0] != '1'){
-					sprintf((char*)TxBuffer,"Error! This function button is unavailable! \r\n"
-							"Please check your input before enter. \r\n" );
+					sprintf((char*)TxBuffer, "****************************************\r\n"
+							"\r\n"
+							"Error! This function button is unavailable! \r\n"
+							"Please check your input before enter. \r\n"
+							"\r\n"
+							"****************************************\r\n"
+							"\r\n");
+
 					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 				}
 					break;
@@ -310,11 +348,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		  				{
 		  					freq_value = freq_value + 1;
 		  					if (LEDStatus == 0){
-		  						sprintf((char*)TxBuffer,"LED is off, Please turn on the LED! \r\n");
+		  						sprintf((char*)TxBuffer,"****************************************\r\n"
+		  								"\r\n"
+		  								"LED is off, Please turn on the LED! \r\n"
+		  								"\r\n"
+										"****************************************\r\n"
+										"\r\n")	;
 		  						HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		  					}
 		  					if (LEDStatus == 1){
-		  					sprintf((char*)TxBuffer,"a was pressed: Speed Up +1= %d Hz \r\n", freq_value);
+		  					sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+		  							"\r\n"
+		  							"a was pressed: Speed Up +1= %d Hz \r\n"
+		  							"\r\n"
+		  							"----------------------------------------\r\n"
+		  							"\r\n", freq_value);
 		  					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		  					}
 		  				}
@@ -322,64 +370,111 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		  				{
 		  					freq_value = freq_value - 1;
 		  					if (LEDStatus == 0){
-		  						sprintf((char*)TxBuffer,"LED is off, Please turn on the LED! \r\n");
+		  						sprintf((char*)TxBuffer,"****************************************\r\n"
+		  								"\r\n"
+		  								"LED is off, Please turn on the LED! \r\n"
+		  								"\r\n"
+		  								"****************************************\r\n");
 		  						HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		  					}
 		  					if (LEDStatus == 1){
-								if (freq_value < 0){
-									sprintf((char*)TxBuffer,"Invalid! The LED frequency must not less than 0 Hz \r\n");
+								if (freq_value < 0 ){
+									sprintf((char*)TxBuffer,"*************************************************\r\n"
+											"\r\n"
+											"Invalid! The LED frequency must not less than 0 Hz \r\n"
+											"\r\n"
+											"*************************************************\r\n"
+											"\r\n");
+
 									HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 									freq_value = 0;
 								}
 								else{
-									sprintf((char*)TxBuffer,"s was pressed: Speed Up -1= %d Hz \r\n", freq_value);
+									sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+											"\r\n"
+											"s was pressed: Speed Down -1= %d Hz \r\n"
+											"\r\n"
+											"----------------------------------------\r\n"
+											"\r\n", freq_value);
 									HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 								}
 		  					}
 		  				}
-			  			if(RxBuffer[0] == 'd')
-			  				{
-			  					if (LEDStatus == 0){
-			  						LEDStatus = 1;
-			  					sprintf((char*)TxBuffer,"d was pressed: LED is on! \r\n");
-			  					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
-			  					}
+			  			if(RxBuffer[0] == 'd'){
 
-			  					else
+			  					if (LEDStatus == 1)
 			  				{
 			  						LEDStatus = 0;
-				  				sprintf((char*)TxBuffer,"d was pressed: LED is off! \r\n");
+			  						lala = 1;
+				  				sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+				  						"\r\n"
+				  						"d was pressed: LED is off! \r\n"
+				  						"\r\n"
+				  						"----------------------------------------\r\n"
+				  						"\r\n");
 				  				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 			  				}
+			  					else {
+						  			LEDStatus = 1;
+						  			lala = 2;
+						  		sprintf((char*)TxBuffer,"----------------------------------------\r\n"
+						  				"\r\n"
+						  				"d was pressed: LED is on! \r\n"
+						  				"\r\n"
+						  				"----------------------------------------\r\n"
+						  				"\r\n");
+						  		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
+						  					}
 			  				}
 				  		if(RxBuffer[0] == 'x'){
-								sprintf((char*)TxBuffer,"Welcome to LED and Button Control System \r\n"
+								sprintf((char*)TxBuffer,"=========================================================\r\n"
+										"\r\n"
+										"Welcome to LED and Button Control System \r\n"
+										"\r\n"
 			  							"Please Select these functions for selecting modes \r\n"
+										"\r\n"
 			  							"Press 0: LED Control mode \r\n"
 			  							"Press 1: Button status mode \r\n"
+										"\r\n"
+										"=========================================================\r\n"
 			  							"\r\n");
 				  				HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 				  				state = MainMenu;
 			  				}
 				  		if(RxBuffer[0] != 'x' && RxBuffer[0] != 'a' && RxBuffer[0] != 'd' && RxBuffer[0] != 's'){
-				  					sprintf((char*)TxBuffer,"Error! This function button is unavailable! \r\n"
-				  							"Please check your input before enter. \r\n" );
+				  					sprintf((char*)TxBuffer,"****************************************\r\n"
+				  							"\r\n"
+				  							"Error! This function button is unavailable! \r\n"
+				  							"Please check your input before enter. \r\n"
+				  							"\r\n"
+				  							"****************************************\r\n"
+				  							"\r\n");
 				  					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 				  					}
 			  			break;
 		   case ButtonStatus:
 		  				if(RxBuffer[0] == 'x')
 		  				{
-		  					sprintf((char*)TxBuffer,"Welcome to LED and Button Control System \r\n"
+		  					sprintf((char*)TxBuffer,"=========================================================\r\n"
+		  							"\r\n"
+		  							"Welcome to LED and Button Control System \r\n"
 		  							"Please Select these functions for selecting modes \r\n"
+		  							"\r\n"
 		  							"Press 0: LED Control mode \r\n"
 		  							"Press 1: Button status mode \r\n"
+		  							"\r\n"
+		  							"=========================================================\r\n"
 		  							"\r\n");
 		  					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		  				}
 					  	if(RxBuffer[0] != 'x'){
-					  		sprintf((char*)TxBuffer,"Error! This function button is unavailable! \r\n"
-					  				"Please check your input before enter. \r\n" );
+					  		sprintf((char*)TxBuffer,"****************************************\r\n"
+					  				"\r\n"
+					  				"Error! This function button is unavailable! \r\n"
+					  				"Please check your input before enter. \r\n"
+					  				"\r\n"
+					  				"****************************************\r\n"
+					  				"\r\n");
 					  		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 					  					}
 		  					RxBuffer[0] = 0;
@@ -395,9 +490,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 
 
 void DummyTask(){
-	static uint32_t timestamp =0;
+	static uint32_t timestamp = 0;
 	if (HAL_GetTick()>=timestamp){
-		timestamp = HAL_GetTick() + (1000/(freq_value*2));
+		timestamp = HAL_GetTick() + (1000/(freq_value * 2)); // divide 2 because it's a toggle
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	}
 }
