@@ -126,7 +126,7 @@ int main(void)
 		  DummyTask();
 	  }
 	  if (LEDStatus == 0){
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+	      HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin,0);
 	  }
 
 	  HAL_GPIO_TogglePin (GPIOA, GPIO_PIN_0);
@@ -254,7 +254,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) /*ถู�?เรีย�?เมื่อ Interrupt ถู�?ทำงาน ถ้าไม่เรีย�?ใช้ที่นี่จะไปทำงานใน Library �?ทน*/
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == GPIO_PIN_13){
 
