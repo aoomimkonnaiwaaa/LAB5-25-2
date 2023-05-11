@@ -379,11 +379,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		  					}
 		  					if (LEDStatus == 1){
 								if (freq_value < 0 ){
-									sprintf((char*)TxBuffer,"*************************************************\r\n"
+									sprintf((char*)TxBuffer,"****************************************\r\n"
 											"\r\n"
 											"Invalid! The LED frequency must not less than 0 Hz \r\n"
-											"\r\n"
-											"*************************************************\r\n"
+											"****************************************\r\n"
 											"\r\n");
 
 									HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
