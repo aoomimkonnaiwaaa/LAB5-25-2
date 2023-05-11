@@ -257,11 +257,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) /*ถู�?เรีย�?เ�
 		sprintf((char*)TxBuffer,"unPressed \r\n");
 		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		}
-//		if(state == ButtonStatus && HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == 1)
-//		{
-//		sprintf((char*)TxBuffer,"unPressed \r\n");
-//		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
-//		}
 	}
 }
 void UARTInterruptConfig(){
@@ -380,13 +375,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		  							"Press 0: LED Control mode \r\n"
 		  							"Press 1: Button status mode \r\n"
 		  							"\r\n");
+		  					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		  				}
 					  	if(RxBuffer[0] != 'x'){
 					  		sprintf((char*)TxBuffer,"Error! This function button is unavailable! \r\n"
 					  				"Please check your input before enter. \r\n" );
 					  		HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 					  					}
-		  					HAL_UART_Transmit_IT(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		  					RxBuffer[0] = 0;
 		  					state = MainMenu;
 		  					break;
@@ -402,7 +397,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 void DummyTask(){
 	static uint32_t timestamp =0;
 	if (HAL_GetTick()>=timestamp){
-		timestamp = HAL_GetTick() + freq_value;
+		timestamp = HAL_GetTick() + (1000/(freq_value*2));
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 	}
 }
